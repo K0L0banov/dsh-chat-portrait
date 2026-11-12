@@ -177,7 +177,10 @@ window.__ModuleLoader__.load({
 
       const sequence = []
       for (const chunk of chunks) {
-        const id = detectEmotion(chunk)
+        let id = detectEmotion(chunk)
+        // A trailing block with no mood words ("……呼……呼噜……") would otherwise
+        // read as neutral and erase the mood the reply actually ended on.
+        if (id === 'neutral' && sequence.length > 0) id = sequence[sequence.length - 1]
         if (sequence.length === 0 || sequence[sequence.length - 1] !== id) sequence.push(id)
       }
       if (sequence.length === 0) sequence.push(detectEmotion(text))
