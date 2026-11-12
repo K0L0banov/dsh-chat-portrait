@@ -422,12 +422,21 @@ window.__ModuleLoader__.load({
   transition: opacity .3s ease, transform .3s ease;
 }
 
-/*
- * The transcript keeps its own column: while the figure is on screen the flow
- * reserves the same width on the right, so text never runs underneath it.
- */
+/* The transcript keeps its own column: while the figure is on screen the flow
+   reserves the same width on the right, so text never runs underneath it. */
 body:has(> .cp-root[data-hidden="false"]) [data-chat-flow] {
   padding-right: min(22vw, 300px);
+}
+
+/* The shipped preview sidebar owns that edge while it is open. Keep it fully
+   readable by stepping out of the way, and hand the reserved width back so the
+   transcript is not narrowed twice. */
+body:has([data-sidebar-right-session]:not([hidden])) .cp-root {
+  opacity: 0;
+  pointer-events: none;
+}
+body:has([data-sidebar-right-session]:not([hidden])) [data-chat-flow] {
+  padding-right: 0;
 }
 .cp-root[data-hidden="true"] {
   opacity: 0;
