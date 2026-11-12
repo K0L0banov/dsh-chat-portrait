@@ -639,15 +639,19 @@ body:has(> .cp-root[data-bar-open="true"]) [data-chat-flow] {
 
       // The preview sidebar and the figure compete for the same edge. Its own
       // session element stays mounted at a fixed width either way, so the real
-      // signal is the transcript shrinking: on a 1380px window the chat flow
-      // measured 1004px with the sidebar closed and 752px with it open.
+      // signal is the transcript shrinking. The reserved padding this plugin
+      // adds narrows the same element, so subtract it before comparing —
+      // otherwise the figure hides itself and never comes back.
       useEffect(() => {
         const read = () => {
           const flow = document.querySelector('[data-chat-flow]')
           if (!flow) return
-          const width = flow.getBoundingClientRect().width
-          if (width <= 0) return
-          setBarOpen(window.innerWidth - width > 500)
+          const rect = flow.getBoundingClientRect()
+          if (rect.width <= 0) return
+          const style = window.getComputedStyle(flow)
+          const reserved = parseFloat(style.paddingRight) || 0
+          // Closed: ~307px. Open: ~568px. 450 splits them cleanly.
+          setBarOpen(window.innerWidth - rect.width - reserved > 450)
         }
         read()
         const observer = new ResizeObserver(read)
