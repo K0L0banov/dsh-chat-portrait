@@ -1,0 +1,14 @@
+{
+  "meta": {
+    "title": "对话立绘",
+    "description": "在对话界面右侧显示角色立绘，随对话内容切换表情与动作。"
+  },
+  "portrait": {
+    "label": "立绘",
+    "toggle": "显示或隐藏立绘",
+    "reveal": "叫出立绘",
+    "hide": "收起立绘",
+    "emotion": "当前表情",
+    "noReply": "等待对话"
+  }
+}

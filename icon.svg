@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="Chat portrait">
+  <defs>
+    <linearGradient id="cp-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d6e4ff"/>
+      <stop offset="1" stop-color="#f2f6ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#cp-bg)"/>
+  <path d="M8 13.2 8.7 5.4 14.2 9.9Z" fill="#ffffff" stroke="#b6c6e6" stroke-width="1.2" stroke-linejoin="round"/>
+  <path d="M24 13.2 23.3 5.4 17.8 9.9Z" fill="#ffffff" stroke="#b6c6e6" stroke-width="1.2" stroke-linejoin="round"/>
+  <path d="M9.5 11.5 9.8 7.5 12.8 10.1Z" fill="#f4b8c8"/>
+  <path d="M22.5 11.5 22.2 7.5 19.2 10.1Z" fill="#f4b8c8"/>
+  <path d="M16 26.4c-5.2 0-8.7-3.7-8.7-8.3C7.3 13.4 11 10.2 16 10.2s8.7 3.2 8.7 7.9c0 4.6-3.5 8.3-8.7 8.3Z" fill="#ffffff" stroke="#b6c6e6" stroke-width="1.2"/>
+  <ellipse cx="12.9" cy="17.7" rx="1.25" ry="1.55" fill="#5b7bb8"/>
+  <ellipse cx="19.1" cy="17.7" rx="1.25" ry="1.55" fill="#5b7bb8"/>
+  <ellipse cx="10.5" cy="20" rx="1.4" ry=".9" fill="#f7c3d1" opacity=".8"/>
+  <ellipse cx="21.5" cy="20" rx="1.4" ry=".9" fill="#f7c3d1" opacity=".8"/>
+  <path d="M15.1 20.6q.9.95 1.8 0" stroke="#8fa6cc" stroke-width="1" fill="none" stroke-linecap="round"/>
+</svg>

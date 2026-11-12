@@ -1,0 +1,14 @@
+{
+  "meta": {
+    "title": "Chat portrait",
+    "description": "Shows a character portrait beside the conversation and reacts to what is being said."
+  },
+  "portrait": {
+    "label": "Portrait",
+    "toggle": "Show or hide the portrait",
+    "reveal": "Call the portrait back",
+    "hide": "Put the portrait away",
+    "emotion": "Current mood",
+    "noReply": "Waiting for a reply"
+  }
+}
