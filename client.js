@@ -74,7 +74,7 @@ window.__ModuleLoader__.load({
       { id: 'excited', words: ['好耶', '太棒', '冲呀', '终于', '来了来了', '耶'] },
       { id: 'happy', words: ['开心', '太好了', '成功', '完成', '搞定', '谢谢', '哈哈', '喜欢', '好哇', '棒'] },
       { id: 'thinking', words: ['让我想想', '先想想', '分析一下', '理一理', '思考', '核实一下', '确认一下'] },
-      { id: 'sleepy', words: ['困了', '晚安', '哈欠', '熬夜', '睡了', '眯一会'] },
+      { id: 'sleepy', words: ['困了', '好困', '困死', '想睡', '晚安', '哈欠', '熬夜', '睡了', '睡一会', '眯一会'] },
     ]
 
     function detectEmotion(text) {
@@ -149,6 +149,7 @@ window.__ModuleLoader__.load({
      */
     const PROGRESS_HAPPY_MS = 1400
     const HAPPY_HOLD_MS = 3500
+    const REPLAY_STEP_MS = 1300
 
     function currentEmotion(reply, running, stalledMs, toolFailed, happyUntil, now) {
       const text = typeof reply === 'string' ? reply : ''
@@ -157,6 +158,27 @@ window.__ModuleLoader__.load({
       if (now < happyUntil) return 'happy'
       if (stalledMs < PROGRESS_HAPPY_MS && text.trim().length > 0) return 'happy'
       return 'thinking'
+    }
+
+    /**
+     * Score a finished reply sentence by sentence and collapse runs of the same
+     * mood. Playing that sequence back reads as the model working through a
+     * feeling — down, then up, then tired — instead of snapping to whichever
+     * keyword happened to land last.
+     */
+    function emotionSequence(text) {
+      if (typeof text !== 'string' || text.trim() === '') return []
+      const parts = text
+        .split(/[。！？!?；;\n]+/)
+        .map((part) => part.trim())
+        .filter((part) => part.length >= 4)
+      const sequence = []
+      for (const part of parts) {
+        const id = detectEmotion(part)
+        if (sequence.length === 0 || sequence[sequence.length - 1] !== id) sequence.push(id)
+      }
+      if (sequence.length === 0) sequence.push(detectEmotion(text))
+      return sequence
     }
 
     /* ------------------------------------------------------------------ *
@@ -336,6 +358,7 @@ window.__ModuleLoader__.load({
       const manifest = useManifest()
       const { usable, sizes } = useUsableEmotions(manifest)
       const [emotion, setEmotion] = useState('neutral')
+      const [replay, setReplay] = useState({ key: '', sequence: [], index: 0 })
       const replyRef = useRef(reply)
       replyRef.current = reply
       const runningRef = useRef(running)
@@ -381,9 +404,38 @@ window.__ModuleLoader__.load({
         return () => window.clearInterval(id)
       }, [usable, manifest])
 
+      // A finished turn gets its mood arc played back, ending on its last mood.
+      useEffect(() => {
+        if (running) {
+          setReplay((current) => (current.sequence.length === 0 ? current : { key: '', sequence: [], index: 0 }))
+          return
+        }
+        if (reply.trim() === '') return
+        setReplay((current) =>
+          current.key === reply ? current : { key: reply, sequence: emotionSequence(reply), index: 0 },
+        )
+      }, [reply, running])
+
+      // Advance the arc one beat at a time, then hold on the final mood.
+      useEffect(() => {
+        if (replay.sequence.length <= 1) return
+        if (replay.index >= replay.sequence.length - 1) return
+        const timer = window.setTimeout(() => {
+          setReplay((current) =>
+            current.sequence.length > 0 && current.index < current.sequence.length - 1
+              ? { ...current, index: current.index + 1 }
+              : current,
+          )
+        }, REPLAY_STEP_MS)
+        return () => window.clearTimeout(timer)
+      }, [replay])
+
       const fallbackId = manifest.fallback
       const picked = typeof override === 'string' && usable && usable.has(override) ? override : null
-      const activeEmotion = picked ?? (usable && usable.has(emotion) ? emotion : fallbackId)
+      const replayed =
+        replay.sequence.length > 0 ? replay.sequence[Math.min(replay.index, replay.sequence.length - 1)] : null
+      const activeEmotion =
+        picked ?? replayed ?? (usable && usable.has(emotion) ? emotion : fallbackId)
       const active = manifest.emotions[activeEmotion] || manifest.emotions[fallbackId]
       const src = sourceOf(active)
       const label = active && active.label ? active.label : activeEmotion
