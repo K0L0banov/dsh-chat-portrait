@@ -427,6 +427,12 @@ window.__ModuleLoader__.load({
 body:has(> .cp-root[data-hidden="false"]) [data-chat-flow] {
   padding-right: min(22vw, 300px);
 }
+
+/* Preview sidebar open: the figure steps aside and the reserved width is
+   handed back, so the centre is not narrowed twice. */
+body:has(> .cp-root[data-bar-open="true"]) [data-chat-flow] {
+  padding-right: 0;
+}
 .cp-root[data-hidden="true"] {
   opacity: 0;
   transform: translateY(24px);
@@ -620,6 +626,7 @@ body:has(> .cp-root[data-hidden="false"]) [data-chat-flow] {
     function PortraitFigure(props) {
       const [preview, setPreview] = useState(null)
       const [shiver, setShiver] = useState(0)
+      const [barOpen, setBarOpen] = useState(false)
       const portrait = usePortrait(props, preview)
       const shown = useVisible()
       const figureRef = useRef(null)
@@ -629,6 +636,31 @@ body:has(> .cp-root[data-hidden="false"]) [data-chat-flow] {
       // Height comes from the preloaded manifest, so a new sheet is already the
       // right size on its first frame instead of snapping from full height.
       const heightRatio = portrait.sizes[portrait.emotion] ?? 1
+
+      // The preview sidebar and the figure compete for the same edge. Its own
+      // session element stays mounted at a fixed width either way, so the real
+      // signal is the transcript shrinking: on a 1380px window the chat flow
+      // measured 1004px with the sidebar closed and 752px with it open.
+      useEffect(() => {
+        const read = () => {
+          const flow = document.querySelector('[data-chat-flow]')
+          if (!flow) return
+          const width = flow.getBoundingClientRect().width
+          if (width <= 0) return
+          setBarOpen(window.innerWidth - width > 500)
+        }
+        read()
+        const observer = new ResizeObserver(read)
+        const flow = document.querySelector('[data-chat-flow]')
+        if (flow) observer.observe(flow)
+        window.addEventListener('resize', read)
+        const timer = window.setInterval(read, 700)
+        return () => {
+          observer.disconnect()
+          window.removeEventListener('resize', read)
+          window.clearInterval(timer)
+        }
+      }, [])
 
       // Poking the figure is a shy beat: show the shy sheet, shiver, then fall
       // back to whatever mood the conversation was in.
@@ -680,7 +712,11 @@ body:has(> .cp-root[data-hidden="false"]) [data-chat-flow] {
 
       const scene = h(
         'div',
-        { className: 'cp-root', 'data-hidden': shown ? 'false' : 'true' },
+        {
+          className: 'cp-root',
+          'data-hidden': shown && !barOpen ? 'false' : 'true',
+          'data-bar-open': barOpen ? 'true' : 'false',
+        },
         h(
           'div',
           { className: 'cp-stage', onClick: onPoke },
