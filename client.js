@@ -161,20 +161,23 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * Score a finished reply sentence by sentence and collapse runs of the same
-     * mood. Playing that sequence back reads as the model working through a
-     * feeling — down, then up, then tired — instead of snapping to whichever
-     * keyword happened to land last.
+     * Score a finished reply in ~100-character blocks and collapse runs of the
+     * same mood. Sentence-sized units flipped far too often — one aside could
+     * cut the arc in half — while 100 characters keeps about one beat per real
+     * paragraph of speech.
      */
     function emotionSequence(text) {
       if (typeof text !== 'string' || text.trim() === '') return []
-      const parts = text
-        .split(/[。！？!?；;\n]+/)
-        .map((part) => part.trim())
-        .filter((part) => part.length >= 4)
+
+      const CHUNK_CHARS = 100
+      const chunks = []
+      for (let start = 0; start < text.length; start += CHUNK_CHARS) {
+        chunks.push(text.slice(start, start + CHUNK_CHARS))
+      }
+
       const sequence = []
-      for (const part of parts) {
-        const id = detectEmotion(part)
+      for (const chunk of chunks) {
+        const id = detectEmotion(chunk)
         if (sequence.length === 0 || sequence[sequence.length - 1] !== id) sequence.push(id)
       }
       if (sequence.length === 0) sequence.push(detectEmotion(text))
