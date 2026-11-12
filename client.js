@@ -144,14 +144,17 @@ window.__ModuleLoader__.load({
      * While a turn runs there is no settled reply to read yet, so the portrait
      * tracks the work itself: a failed tool attempt reads as frustration,
      * fresh streamed text reads as progress, and the rest of the time it looks
-     * busy.
+     * busy. Progress holds its own beat — a pleased expression that vanishes
+     * in one tick reads as a glitch, not as a reaction.
      */
     const PROGRESS_HAPPY_MS = 1400
+    const HAPPY_HOLD_MS = 3500
 
-    function currentEmotion(reply, running, stalledMs, toolFailed) {
+    function currentEmotion(reply, running, stalledMs, toolFailed, happyUntil, now) {
       const text = typeof reply === 'string' ? reply : ''
       if (!running) return detectEmotion(text)
       if (toolFailed) return 'sad'
+      if (now < happyUntil) return 'happy'
       if (stalledMs < PROGRESS_HAPPY_MS && text.trim().length > 0) return 'happy'
       return 'thinking'
     }
@@ -343,13 +346,19 @@ window.__ModuleLoader__.load({
       useEffect(() => {
         let last = { id: 'neutral', at: 0 }
         let progress = { length: -1, at: Date.now() }
+        let happyUntil = 0
         if (DEMO) return () => {}
         const id = window.setInterval(() => {
           const text = replyRef.current
           const running = runningRef.current
           const now = Date.now()
           if (text.length !== progress.length) progress = { length: text.length, at: now }
-          const next = currentEmotion(text, running, now - progress.at, toolFailedRef.current)
+          const stalled = now - progress.at
+          // Fresh output earns a longer pleased beat than the sampling window.
+          if (running && stalled < PROGRESS_HAPPY_MS && text.trim().length > 0) {
+            happyUntil = now + HAPPY_HOLD_MS
+          }
+          const next = currentEmotion(text, running, stalled, toolFailedRef.current, happyUntil, now)
           if (next === last.id) return
           if (now - last.at < HOLD_MS && last.at !== 0) return
           last = { id: next, at: now }
