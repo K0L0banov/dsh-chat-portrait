@@ -14,7 +14,11 @@ OUT = os.path.join(ASSETS, '..', 'tools', 'alignment-check.png')
 with open(os.path.join(ASSETS, 'portrait.json'), encoding='utf-8') as handle:
     manifest = json.load(handle)
 
-order = ['neutral', 'happy', 'thinking', 'sad', 'sleepy']
+order = [
+    'neutral', 'happy', 'excited', 'angry', 'shy', 'thinking',
+    'aggrieved', 'panic', 'proud', 'tsundere', 'praised',
+    'sleepy', 'sad', 'obedient', 'shy_sit', 'praised_sit',
+]
 GAP = 28
 PAD = 28
 GROUND = 24

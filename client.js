@@ -67,10 +67,16 @@ window.__ModuleLoader__.load({
      * ------------------------------------------------------------------ */
 
     const SIGNALS = [
-      { id: 'angry', words: ['生气', '愤怒', '可恶', '讨厌', '烦死', '炸毛', '气死', '不许', '少来', '闭嘴', '凭什么', '才不', '才没', '笨蛋', '坏人', '欺负', '哼'] },
-      { id: 'sad', words: ['难过', '伤心', '抱歉', '对不起', '遗憾', '可惜', '没办法', '无能为力', '唉', '委屈'] },
+      { id: 'tsundere', words: ['才不', '才没', '才不是', '谁要', '哼'] },
+      { id: 'panic', words: ['慌了', '怎么办', '糟了', '完蛋', '来不及', '急死', '惨了', '救命'] },
+      { id: 'aggrieved', words: ['委屈', '冤枉', '怪本喵', '不是本喵', '欺负', '凶本喵'] },
+      { id: 'angry', words: ['生气', '愤怒', '可恶', '讨厌', '烦死', '炸毛', '气死', '不许', '少来', '闭嘴', '凭什么'] },
+      { id: 'sad', words: ['难过', '伤心', '抱歉', '对不起', '遗憾', '可惜', '没办法', '无能为力', '唉', '呜'] },
       { id: 'surprised', words: ['诶', '咦', '哇', '居然', '竟然', '没想到', '真的吗', '怎么会', '哎呀', '吓'] },
-      { id: 'shy', words: ['害羞', '脸红', '不好意思', '别夸', '嘿嘿', '贴贴', '喜欢你', '夸', '抱抱', '摸头', '可爱', '乖乖', '撒娇', '蹭', '捏'] },
+      { id: 'shy', words: ['害羞', '脸红', '不好意思', '别夸', '嘿嘿', '贴贴', '喜欢你', '抱抱', '摸头', '可爱', '撒娇', '蹭', '捏'] },
+      { id: 'proud', words: ['得意', '厉害吧', '本喵厉害', '骄傲', '看本喵的', '牛吧', '佩服吧'] },
+      { id: 'praised', words: ['表扬', '夸', '做得好', '真棒', '干得好'] },
+      { id: 'obedient', words: ['乖乖', '乖', '听话', '坐好'] },
       { id: 'excited', words: ['好耶', '太棒', '冲呀', '终于', '来了来了', '耶'] },
       { id: 'happy', words: ['开心', '太好了', '成功', '完成', '搞定', '谢谢', '哈哈', '喜欢', '好哇', '棒', '一起', '陪你', '玩'] },
       { id: 'thinking', words: ['让我想想', '先想想', '分析一下', '理一理', '思考', '核实一下', '确认一下'] },
@@ -364,6 +370,7 @@ window.__ModuleLoader__.load({
       const manifest = useManifest()
       const { usable, sizes } = useUsableEmotions(manifest)
       const [emotion, setEmotion] = useState('neutral')
+      const [pose, setPose] = useState('stand')
       const [replay, setReplay] = useState({ key: '', sequence: [], index: 0 })
       const replyRef = useRef(reply)
       replyRef.current = reply
@@ -440,9 +447,23 @@ window.__ModuleLoader__.load({
       const picked = typeof override === 'string' && usable && usable.has(override) ? override : null
       const replayed =
         replay.sequence.length > 0 ? replay.sequence[Math.min(replay.index, replay.sequence.length - 1)] : null
+      const baseEmotion = picked ?? replayed ?? (usable && usable.has(emotion) ? emotion : fallbackId)
+
+      // Some moods ship in both a standing and a kneeling sheet (`shy` /
+      // `shy_sit`). Prefer the variant matching the pose already on screen, so
+      // switching mood never makes her stand up or kneel down for no reason.
+      const posedId = manifest.emotions[baseEmotion + '_' + pose] ? baseEmotion + '_' + pose : baseEmotion
       const activeEmotion =
-        picked ?? replayed ?? (usable && usable.has(emotion) ? emotion : fallbackId)
+        usable && usable.has(posedId) ? posedId : usable && usable.has(baseEmotion) ? baseEmotion : fallbackId
       const active = manifest.emotions[activeEmotion] || manifest.emotions[fallbackId]
+
+      // Remember which pose is on screen so the next mood can pick its matching
+      // variant, and so a poke reuses the same posture.
+      useEffect(() => {
+        const entry = manifest.emotions[activeEmotion]
+        const next = entry && entry.pose
+        if (next && next !== pose) setPose(next)
+      }, [activeEmotion, manifest, pose])
       const src = sourceOf(active)
       const label = active && active.label ? active.label : activeEmotion
       const scale = active && typeof active.scale === 'number' ? active.scale : 1
@@ -689,9 +710,11 @@ body:has(> .cp-root[data-hidden="false"]) [data-chat-flow] {
       const heightRatio = portrait.sizes[portrait.emotion] ?? 1
 
       // Poking the figure is a shy beat: show the shy sheet, shiver, then fall
-      // back to whatever mood the conversation was in.
+      // back to whatever mood the conversation was in. `usePortrait` resolves
+      // the pose, so a kneeling scene gets the kneeling shy sheet.
       const onPoke = () => {
-        if (!portrait.usable || !portrait.usable.has('shy')) return
+        if (!portrait.usable) return
+        if (!portrait.usable.has('shy') && !portrait.usable.has('shy_sit')) return
         setPreview('shy')
         setShiver((value) => value + 1)
         if (returnTimer.current) window.clearTimeout(returnTimer.current)
