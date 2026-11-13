@@ -18,7 +18,7 @@ window.__ModuleLoader__.load({
 
     // Temporary preview sweep: cycles every available sheet so the whole set can
     // be eyeballed for size in the real window. Left false in the delivered build.
-    const DEMO = true
+    const DEMO = false
     const DEMO_MS = 2400
 
     const FALLBACK_MANIFEST = {
