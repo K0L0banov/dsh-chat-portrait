@@ -16,9 +16,9 @@ window.__ModuleLoader__.load({
     // at its own share of it so a kneeling pose reads shorter, not smaller.
     const REF_HEIGHT = 1200
 
-    // Temporary capture mode: cycles every available expression so the whole
-    // set can be screenshotted in one pass. Left false in the delivered build.
-    const DEMO = false
+    // Temporary preview sweep: cycles every available sheet so the whole set can
+    // be eyeballed for size in the real window. Left false in the delivered build.
+    const DEMO = true
     const DEMO_MS = 2400
 
     const FALLBACK_MANIFEST = {
