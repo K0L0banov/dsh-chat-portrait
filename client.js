@@ -275,15 +275,34 @@ window.__ModuleLoader__.load({
       const [manifest, setManifest] = useState(FALLBACK_MANIFEST)
       useEffect(() => {
         let alive = true
+        let lastText = ''
+
         // The Host route answers the bare prefix with the manifest itself.
-        fetch(BASE, { cache: 'no-cache' })
-          .then((response) => (response.ok ? response.json() : null))
-          .then((raw) => {
-            if (alive && raw) setManifest(normalizeManifest(raw))
-          })
-          .catch(() => {})
+        // Comparing the raw text (not the parsed object) keeps a poll cheap and
+        // makes it skip the state update entirely when nothing changed.
+        const load = () => {
+          fetch(BASE, { cache: 'no-cache' })
+            .then((response) => (response.ok ? response.text() : null))
+            .then((text) => {
+              if (!alive || !text || text === lastText) return
+              lastText = text
+              setManifest(normalizeManifest(JSON.parse(text)))
+            })
+            .catch(() => {})
+        }
+
+        load()
+        // While tuning the manifest is rewritten on disk constantly; polling it
+        // means a scale change shows up without needing a manual refresh.
+        if (!DEMO) {
+          return () => {
+            alive = false
+          }
+        }
+        const id = window.setInterval(load, 4000)
         return () => {
           alive = false
+          window.clearInterval(id)
         }
       }, [])
       return manifest
