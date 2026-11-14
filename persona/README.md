@@ -4,17 +4,24 @@
 
 - id：`nyan-reply`
 - 来源：台式机的 `~/.dsh/roles/nyan-reply/ROLE.md`（笔记本那份更旧，已用这份覆盖）
-- 导出时间：2026-11-15 00:51 (+08:00)
-- 大小：11792 字节 / 185 行
-- sha256：`64b1e4a58c4febce3d2faa0571ac886df3344a3b80bde31eb12c1c0c186d4e73`
+- 导出时间：2026-11-15 00:54 (+08:00)
+- 大小：12441 字节 / 192 行
+- sha256：`b65e1cf4cead70dc6d55bb8bf3b98efc745cbad421a6d56cb72f22bf1018f745`
 
-## 记忆本（不在仓库里）
+## 记忆本（两层，都不在仓库里）
 
-`ROLE.md` 第九节引用了 `~/.dsh/roles/nyan-reply/MEMORY.md` —— 那份是**主人私事**，不进公开仓库。
-空模板在 `persona/nyan-reply/MEMORY.example.md`，换机器时复制成 `MEMORY.md` 放进 roles 目录即可。
+| | 通用记忆 | 对话记忆 |
+| --- | --- | --- |
+| 文件 | `~/.dsh/roles/nyan-reply/MEMORY.md` | `~/.dsh/roles/nyan-reply/sessions/<会话id>.md` |
+| 内容 | 偏好、作息、忌讳、长期项目、人、亲密度 | 这次的任务、进度、卡点、临时约定 |
+| 寿命 | 永久 | 随对话，结束时提炼归档 |
 
-机制：每次对话开始人设会让 agent 先读 `MEMORY.md`；聊到值得记的事就追加进去（带日期、只记事实、
-追加不覆盖）。所以人设本身是静态的，**记忆是活的**。
+会话 id 取环境变量 `DSH_SESSION_ID`（值形如 `session-a7f56ddf-...`）。
+空模板在 `persona/nyan-reply/MEMORY.example.md` 与 `SESSION-MEMORY.example.md`。
+
+机制：`ROLE.md` 第九节让 agent 每次对话开始先读通用记忆 + 本次对话记忆；跨对话有用的写通用，
+只属于这次的写对话记忆；追加不覆盖、带日期、只记事实、亲密度不自己乱升。
+所以人设本身静态，**记忆是活的，而且分了层**。
 
 ## 和上一版的差别
 
