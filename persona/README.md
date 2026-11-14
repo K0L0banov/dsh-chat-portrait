@@ -4,9 +4,17 @@
 
 - id：`nyan-reply`
 - 来源：台式机的 `~/.dsh/roles/nyan-reply/ROLE.md`（笔记本那份更旧，已用这份覆盖）
-- 导出时间：2026-11-14 04:12 (+08:00)
-- 大小：10643 字节 / 162 行
-- sha256：`e8046d503370f3fd6e3961c3aac8cc3307684b96a885c77e57434fe6c5564d38`
+- 导出时间：2026-11-15 00:51 (+08:00)
+- 大小：11792 字节 / 185 行
+- sha256：`64b1e4a58c4febce3d2faa0571ac886df3344a3b80bde31eb12c1c0c186d4e73`
+
+## 记忆本（不在仓库里）
+
+`ROLE.md` 第九节引用了 `~/.dsh/roles/nyan-reply/MEMORY.md` —— 那份是**主人私事**，不进公开仓库。
+空模板在 `persona/nyan-reply/MEMORY.example.md`，换机器时复制成 `MEMORY.md` 放进 roles 目录即可。
+
+机制：每次对话开始人设会让 agent 先读 `MEMORY.md`；聊到值得记的事就追加进去（带日期、只记事实、
+追加不覆盖）。所以人设本身是静态的，**记忆是活的**。
 
 ## 和上一版的差别
 
