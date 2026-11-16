@@ -146,15 +146,6 @@ window.__ModuleLoader__.load({
       return false
     }
 
-    /**
-     * DeepSeek off-peak window: 00:30–08:30 Beijing time is the discounted
-     * (valley) period; everything else is the peak period.
-     */
-    function isOffPeak(date) {
-      const minutes = date.getHours() * 60 + date.getMinutes()
-      return minutes >= 30 && minutes < 8 * 60 + 30
-    }
-
     /** The mood the conversation is in right now.
      *
      * While a turn runs there is no settled reply to read yet, so the portrait
@@ -518,7 +509,9 @@ window.__ModuleLoader__.load({
 .cp-root {
   position: fixed;
   right: 28px;
-  bottom: 130px;
+  /* Sits above the composer and the peak/valley badge another plugin puts
+     there, so the figure never overlaps either. */
+  bottom: 186px;
   height: min(66vh, 700px);
   max-width: calc(min(22vw, 300px) - 28px);
   display: flex;
@@ -639,28 +632,6 @@ body:has(> .cp-root[data-hidden="false"]) [data-chat-flow] {
   outline-offset: 1px;
 }
 
-.cp-tariff {
-  position: absolute;
-  left: 50%;
-  bottom: 44px;
-  transform: translateX(-50%);
-  padding: 4px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--dsw-alias-border-l1);
-  background: var(--dsw-alias-bg-overlay);
-  color: var(--dsw-alias-label-secondary);
-  font-size: 11px;
-  line-height: 1.2;
-  white-space: nowrap;
-  pointer-events: none;
-  backdrop-filter: blur(8px);
-  transition: color .3s ease, border-color .3s ease;
-}
-.cp-tariff[data-off-peak="true"] {
-  color: var(--dsw-alias-state-success-primary);
-  border-color: var(--dsw-alias-state-success-primary);
-}
-
 .cp-reopen {
   position: fixed;
   right: 16px;
@@ -750,20 +721,11 @@ body:has(> .cp-root[data-hidden="false"]) [data-chat-flow] {
     function PortraitFigure(props) {
       const [preview, setPreview] = useState(null)
       const [shiver, setShiver] = useState(0)
-      const [now, setNow] = useState(() => new Date())
       const portrait = usePortrait(props, preview)
       const shown = useVisible()
       const figureRef = useRef(null)
       const [reaction, setReaction] = useState(null)
       const returnTimer = useRef(null)
-
-      // The clock only matters at 00:30 and 08:30, so half a minute is plenty.
-      useEffect(() => {
-        const id = window.setInterval(() => setNow(new Date()), 30000)
-        return () => window.clearInterval(id)
-      }, [])
-
-      const offPeak = isOffPeak(now)
 
       // Height comes from the preloaded manifest, so a new sheet is already the
       // right size on its first frame instead of snapping from full height.
@@ -865,12 +827,6 @@ body:has(> .cp-root[data-hidden="false"]) [data-chat-flow] {
               '×',
             ),
           ),
-        ),
-        // Peak/valley pricing tag; the name is a running joke on the founder's.
-        h(
-          'div',
-          { className: 'cp-tariff', 'data-off-peak': offPeak ? 'true' : 'false' },
-          offPeak ? '现在是梁文谷喵~' : '现在是梁文峰喵~',
         ),
       )
 
