@@ -391,6 +391,10 @@ window.__ModuleLoader__.load({
       const { usable, sizes } = useUsableEmotions(manifest)
       const [emotion, setEmotion] = useState('neutral')
       const [pose, setPose] = useState('stand')
+      // Outfit is carried over the same way as pose: the mood changes, the
+      // clothes do not. Right now only one outfit exists (the cardigan), so this
+      // stays a no-op until outfit-specific sheets are added.
+      const [outfit, setOutfit] = useState('cardigan')
       const [replay, setReplay] = useState({ key: '', sequence: [], index: 0 })
       const replyRef = useRef(reply)
       replyRef.current = reply
@@ -469,21 +473,34 @@ window.__ModuleLoader__.load({
         replay.sequence.length > 0 ? replay.sequence[Math.min(replay.index, replay.sequence.length - 1)] : null
       const baseEmotion = picked ?? replayed ?? (usable && usable.has(emotion) ? emotion : fallbackId)
 
-      // Some moods ship in both a standing and a kneeling sheet (`shy` /
-      // `shy_sit`). Prefer the variant matching the pose already on screen, so
-      // switching mood never makes her stand up or kneel down for no reason.
-      const posedId = manifest.emotions[baseEmotion + '_' + pose] ? baseEmotion + '_' + pose : baseEmotion
+      // Some moods ship in several variants: standing or kneeling, and (later)
+      // different outfits. Resolution walks from most to least specific, so a
+      // mood swap keeps whatever pose and clothes are already on screen unless a
+      // matching variant exists. Naming: <emotion>[_<pose>][_<outfit>].
+      const candidates = [
+        baseEmotion + '_' + pose + '_' + outfit,
+        baseEmotion + '_' + outfit,
+        baseEmotion + '_' + pose,
+        baseEmotion,
+      ]
+      const posedId = candidates.find((id) => manifest.emotions[id]) || baseEmotion
       const activeEmotion =
         usable && usable.has(posedId) ? posedId : usable && usable.has(baseEmotion) ? baseEmotion : fallbackId
       const active = manifest.emotions[activeEmotion] || manifest.emotions[fallbackId]
 
-      // Remember which pose is on screen so the next mood can pick its matching
-      // variant, and so a poke reuses the same posture.
+      // Remember which pose and outfit are on screen so the next mood can pick
+      // its matching variant, and so a poke reuses the same posture and clothes.
       useEffect(() => {
         const entry = manifest.emotions[activeEmotion]
         const next = entry && entry.pose
         if (next && next !== pose) setPose(next)
       }, [activeEmotion, manifest, pose])
+
+      useEffect(() => {
+        const entry = manifest.emotions[activeEmotion]
+        const next = entry && entry.outfit
+        if (next && next !== outfit) setOutfit(next)
+      }, [activeEmotion, manifest, outfit])
       const src = sourceOf(active)
       const label = active && active.label ? active.label : activeEmotion
       const scale = active && typeof active.scale === 'number' ? active.scale : 1
