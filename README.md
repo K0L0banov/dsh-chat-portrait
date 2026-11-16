@@ -107,5 +107,11 @@ node tools/emotion-test.mjs
 
 ## 素材说明
 
-`assets/source/` 里是原始差分图，`assets/*.webp` 是脚本生成的运行时素材。
+`assets/source/` 里是原始差分图（由 `tools/import-portraits.py` 从桌面「猫娘立绘」文件夹按中文名映射导入），
+`assets/*.webp` 是脚本生成的运行时素材。
 角色立绘版权归作者所有，本项目只作为个人使用示例；换成你自己的角色时替换 `assets/source/` 即可。
+
+## 相关补丁
+
+本机还给第三方插件 `dsh-peak-valley` 打了两处补丁（阶段名改成「梁文峰 / 梁文谷」、条高固定减少跳动），
+它在本仓库之外，操作手册见 [docs/peak-valley-patch.md](docs/peak-valley-patch.md)。
