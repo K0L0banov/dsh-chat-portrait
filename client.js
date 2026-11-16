@@ -509,9 +509,9 @@ window.__ModuleLoader__.load({
 .cp-root {
   position: fixed;
   right: 28px;
-  /* Sits above the composer and the peak/valley badge another plugin puts
-     there, so the figure never overlaps either. */
-  bottom: 186px;
+  /* Sits clear of the composer and the peak/valley badge another plugin puts
+     there, without floating too high. */
+  bottom: 167px;
   height: min(66vh, 700px);
   max-width: calc(min(22vw, 300px) - 28px);
   display: flex;
